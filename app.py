@@ -6,6 +6,10 @@ import seaborn as sns
 # --- Load Dataset from GitHub ---
 url = "https://raw.githubusercontent.com/Nashalan/Tutorial/refs/heads/main/Academic%20Stress%20Level.csv"
 df = pd.read_csv(url)
+df.columns = df.columns.str.strip()
+stage_stress = df.groupby('Your Academic Stage')['Rate your academic stress index'].mean()
+
+
 
 st.title("📊 Academic Stress Analysis Dashboard")
 
