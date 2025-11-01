@@ -25,18 +25,20 @@ if 'Your Academic Stage' in df.columns and 'Rate your academic stress index' in 
 else:
     st.warning("Columns for academic stage or stress index not found in dataset.")
 
-# --- 2️⃣ Home Pressure vs Stress Index ---
+# --- 2️⃣ Home Pressure vs Stress Index (Interactive) ---
 st.subheader("2️⃣ Home Pressure vs Stress Index")
+
 if 'Academic pressure from your home' in df.columns and 'Rate your academic stress index' in df.columns:
-    fig2, ax2 = plt.subplots()
-    sns.boxplot(
+    fig2 = px.box(
+        df,
         x='Academic pressure from your home',
         y='Rate your academic stress index',
-        data=df,
-        ax=ax2
+        color='Academic pressure from your home',
+        title='Home Academic Pressure vs Stress Index',
+        points='all'
     )
-    ax2.set_title('Home Academic Pressure vs Stress Index')
-    st.pyplot(fig2)
+    st.plotly_chart(fig2, use_container_width=True)
+
     st.markdown("""
     **Interpretation:**  
     Students with higher academic pressure from home exhibit greater stress index values,  
@@ -44,6 +46,7 @@ if 'Academic pressure from your home' in df.columns and 'Rate your academic stre
     """)
 else:
     st.warning("Columns for home pressure or stress index not found in dataset.")
+
 
 # --- 3️⃣ Study Environment Distribution ---
 st.subheader("3️⃣ Study Environment Distribution")
