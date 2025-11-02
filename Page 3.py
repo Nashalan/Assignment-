@@ -5,43 +5,46 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 st.title("💤 Objective 3: Lifestyle Factors & Stress")
-st.markdown("**Objective Statement:** To explore how sleep duration and physical activity influence stress levels.")
+st.markdown("**Objective Statement:** To explore how sleep and physical activity influence stress levels.")
 
 st.info("""
 **Summary:**  
-This section explores lifestyle variables such as sleep and exercise to determine their role in stress management.  
-Students with healthier lifestyles may experience lower academic stress.
+This section investigates lifestyle habits and their impact on academic stress.  
+Healthy routines, such as proper sleep and regular exercise, may help lower stress.
 """)
 
-# Load dataset
+# Load data
 DATA_URL = "https://raw.githubusercontent.com/Nashalan/Assignment-/refs/heads/main/Academic%20Stress%20Level.csv"
 @st.cache_data
 def load_data():
-    return pd.read_csv(DATA_URL)
+    df = pd.read_csv(DATA_URL)
+    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+    return df
 
 df = load_data()
 
 # Visualization 1: Sleep vs Stress
-if 'Sleep Duration' in df.columns:
+if 'sleep_duration' in df.columns:
     st.subheader("1️⃣ Sleep Duration vs Stress Level")
-    fig = px.scatter(df, x='Sleep Duration', y='Stress Level', color='Sleep Duration', color_continuous_scale='viridis')
+    fig = px.scatter(df, x='sleep_duration', y='stress_level', color='sleep_duration',
+                     color_continuous_scale='viridis')
     st.plotly_chart(fig)
 
 # Visualization 2: Physical Activity vs Stress
-if 'Physical Activity' in df.columns:
+if 'physical_activity' in df.columns:
     st.subheader("2️⃣ Stress Level by Physical Activity")
     fig, ax = plt.subplots()
-    sns.boxplot(x='Physical Activity', y='Stress Level', data=df, palette='coolwarm', ax=ax)
+    sns.boxplot(x='physical_activity', y='stress_level', data=df, palette='coolwarm', ax=ax)
     st.pyplot(fig)
 
-# Visualization 3: 3D Scatter
-if all(x in df.columns for x in ['Sleep Duration', 'Physical Activity', 'Stress Level']):
+# Visualization 3: 3D Plot
+if all(c in df.columns for c in ['sleep_duration', 'physical_activity', 'stress_level']):
     st.subheader("3️⃣ 3D Plot: Sleep, Activity & Stress")
-    fig = px.scatter_3d(df, x='Sleep Duration', y='Physical Activity', z='Stress Level', color='Stress Level')
+    fig = px.scatter_3d(df, x='sleep_duration', y='physical_activity', z='stress_level', color='stress_level')
     st.plotly_chart(fig)
 
 st.success("""
 **Interpretation:**  
-The visualizations show how healthy habits such as enough sleep and regular physical activity 
-can help lower academic stress. Promoting these behaviors could improve students’ well-being.
+These visualizations suggest that students with better sleep and active lifestyles report lower stress levels.  
+This highlights the importance of healthy habits for academic and emotional well-being.
 """)
