@@ -48,7 +48,14 @@ if page == "Home":
 elif page == "Stress Distribution":
     st.title("🎯 Stress Level Distribution")
     fig, ax = plt.subplots()
-    sns.histplot(df['stress_level'], kde=True, color="skyblue", ax=ax)
+    # Find the column that contains the word "stress"
+stress_col = next((c for c in df.columns if 'stress' in c.lower()), None)
+
+if stress_col:
+    sns.histplot(df[stress_col], kde=True, color="skyblue", ax=ax)
+else:
+    st.error("⚠️ No column containing 'stress' found. Check dataset column names above.")
+
     st.pyplot(fig)
 
     fig, ax = plt.subplots()
