@@ -31,6 +31,11 @@ def get_stress_column(df):
 
 stress_col = get_stress_column(df)
 
+import pandas as pd
+url = "https://raw.githubusercontent.com/Nashalan/Assignment-/refs/heads/main/Academic%20Stress%20Level.csv"
+df = pd.read_csv(url)
+print(df.columns)
+
 # ---------------------------------------------------
 # SIDEBAR MENU
 # ---------------------------------------------------
