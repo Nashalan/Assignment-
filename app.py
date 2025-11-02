@@ -26,4 +26,31 @@ def load_data():
 df = load_data()
 
 st.subheader("📂 Dataset Preview")
+
+# Sidebar navigation
+st.sidebar.title("📊 Academic Stress Dashboard")
+page = st.sidebar.radio(
+    "Select a section:",
+    ["Stress Distribution", "Academic Factors & Stress", "Lifestyle Factors & Stress"]
+)
+
+# PAGE 1
+if page == "Stress Distribution":
+    st.title("🎯 Stress Level Distribution")
+    fig, ax = plt.subplots()
+    sns.histplot(df['Stress Level'], kde=True, color="skyblue", ax=ax)
+    st.pyplot(fig)
+
+# PAGE 2
+elif page == "Academic Factors & Stress":
+    st.title("🎓 Academic Factors & Stress")
+    fig = px.scatter(df, x='Study Hours', y='Stress Level', trendline="ols")
+    st.plotly_chart(fig)
+
+# PAGE 3
+elif page == "Lifestyle Factors & Stress":
+    st.title("💤 Lifestyle Factors & Stress")
+    fig = px.scatter_3d(df, x='Sleep Duration', y='Physical Activity', z='Stress Level', color='Stress Level')
+    st.plotly_chart(fig)
+
 st.dataframe(df.head())
