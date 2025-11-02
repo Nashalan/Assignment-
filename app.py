@@ -2,7 +2,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
 # ---------------------------------------------------
 # CONFIGURATION
@@ -47,32 +46,32 @@ if page == "🏠 Home":
     st.title("🏫 Academic Stress Level Dashboard")
     st.markdown("""
     Welcome to the **Academic Stress Visualization Dashboard**!  
-    This dashboard helps explore how academic and lifestyle factors influence students' stress levels.
+    This tool explores how academic and personal factors impact student stress levels.
 
     **Sections Overview:**
-    - 🎯 *Stress Overview*: General distribution of student stress  
-    - 🎓 *Academic Factors*: Workload, grades, and study habits  
-    - 💡 *Stress Management*: Insights and practical tips
+    - 🎯 *Stress Overview*: General stress trends  
+    - 🎓 *Academic Factors*: Study workload and academic influences  
+    - 💡 *Stress Management*: Insights and personalized recommendations
     """)
 
     st.subheader("📘 Dataset Preview")
     st.dataframe(df.head())
 
-    st.info("👉 Use the sidebar to explore stress-related insights and practical recommendations.")
+    st.info("👉 Use the sidebar to navigate between visualization sections.")
 
 # ---------------------------------------------------
 # PAGE 2 — STRESS OVERVIEW
 # ---------------------------------------------------
 elif page == "🎯 Stress Overview":
-    st.title("🎯 Stress Distribution & Overview")
+    st.title("🎯 Stress Level Distribution and Overview")
 
     st.markdown("### 🎯 Objective")
-    st.write("To visualize how stress levels are distributed and identify overall stress trends.")
+    st.write("To visualize how stress levels are distributed and identify general patterns.")
 
     st.markdown("### 📦 Summary Box")
     st.info("""
-    This section explores the **spread of stress levels** and highlights group differences 
-    such as gender or age. It helps identify which demographics experience higher stress.
+    This page examines the **spread and variation of student stress levels**, including differences 
+    by gender and age (if available). The aim is to highlight which demographics experience higher stress.
     """)
 
     if stress_col:
@@ -89,7 +88,7 @@ elif page == "🎯 Stress Overview":
                           title="Average Stress by Gender")
             st.plotly_chart(fig2, use_container_width=True)
 
-        # Stress by age
+        # Stress by age (if available)
         if "age" in df.columns:
             fig3 = px.line(df.sort_values("age"), x="age", y=stress_col,
                            title="Stress Level by Age", markers=True)
@@ -97,9 +96,8 @@ elif page == "🎯 Stress Overview":
 
         st.markdown("### 💬 Interpretation")
         st.success("""
-        The histogram shows that most students report moderate stress levels.  
-        Gender and age comparisons reveal how demographic factors influence stress variation.  
-        Younger or less experienced students may show higher stress due to adjustment challenges.
+        Most students experience **moderate stress levels**, with some variations by age and gender.  
+        Such insights can guide interventions or support systems targeting more vulnerable groups.
         """)
     else:
         st.error("⚠️ No column containing 'stress' found in the dataset.")
@@ -111,12 +109,12 @@ elif page == "🎓 Academic Factors":
     st.title("🎓 Academic Factors Affecting Stress")
 
     st.markdown("### 🎯 Objective")
-    st.write("To investigate how academic workload and performance influence student stress levels.")
+    st.write("To explore how academic workload, grades, and study habits influence stress levels.")
 
     st.markdown("### 📦 Summary Box")
     st.info("""
-    Academic elements such as **study hours**, **course load**, and **grades** are often key sources of stress.  
-    This section examines how these academic metrics are linked to stress intensity.
+    Academic factors such as **course load**, **study hours**, and **grades** are common stress drivers.  
+    This page examines how these academic metrics correlate with students’ stress levels.
     """)
 
     if stress_col:
@@ -129,28 +127,20 @@ elif page == "🎓 Academic Factors":
                           color_continuous_scale='RdBu', title="Correlation of Academic Factors with Stress")
         st.plotly_chart(fig_corr, use_container_width=True)
 
-        # Parallel coordinates (to see multi-variable relation)
-        if len(numeric_cols) > 3:
-            fig_para = px.parallel_coordinates(df, color=stress_col,
-                                               color_continuous_scale="Plasma",
-                                               dimensions=numeric_cols[:5],
-                                               title="Parallel View: Academic Factors vs Stress")
-            st.plotly_chart(fig_para, use_container_width=True)
-
-        # Academic scatter (choose variable)
+        # Scatter plot to compare stress with selected variable
         num_cols = [col for col in numeric_cols if col != stress_col]
         if num_cols:
             x_var = st.selectbox("Select an Academic Variable to Compare with Stress:", num_cols)
-            fig_scat = px.scatter(df, x=x_var, y=stress_col, trendline="ols",
+            fig_scat = px.scatter(df, x=x_var, y=stress_col,
                                   color=stress_col, color_continuous_scale="Viridis",
                                   title=f"{x_var.replace('_',' ').title()} vs Stress Level")
             st.plotly_chart(fig_scat, use_container_width=True)
 
         st.markdown("### 💬 Interpretation")
         st.success("""
-        Academic workload shows strong correlations with stress.  
-        Students with heavy course loads or lower grades generally report higher stress.  
-        Parallel plots highlight how multiple academic pressures combine to raise stress levels.
+        High correlations between **academic load** or **lower performance** and stress confirm that 
+        heavy workloads and low grades significantly increase pressure.  
+        These findings support the need for balanced scheduling and academic counseling.
         """)
     else:
         st.error("⚠️ No stress column found in dataset.")
@@ -162,65 +152,61 @@ elif page == "💡 Stress Management & Recommendations":
     st.title("💡 Stress Management & Recommendations")
 
     st.markdown("### 🎯 Objective")
-    st.write("To identify high-stress patterns in the data and provide personalized tips for stress management.")
+    st.write("To identify high-stress patterns and offer practical recommendations to reduce stress.")
 
     st.markdown("### 📦 Summary Box")
     st.info("""
-    Based on data analysis, this section identifies **which student groups experience higher stress**
-    and offers **data-driven recommendations** to help manage it effectively.
+    This section identifies **which groups experience more stress** and provides 
+    **personalized, data-driven suggestions** to improve well-being and productivity.
     """)
 
     if stress_col:
-        # High stress analysis
-        high_stress_df = df[df[stress_col] > df[stress_col].mean()]
         avg_stress = df[stress_col].mean()
         st.metric("📈 Average Stress Level", f"{avg_stress:.2f}")
 
-        # Gender-based stress (if available)
+        # Stress by gender (if available)
         if "gender" in df.columns:
             avg_stress_gender = df.groupby("gender")[stress_col].mean().reset_index()
             fig1 = px.bar(avg_stress_gender, x="gender", y=stress_col, color="gender",
                           title="Average Stress Level by Gender")
             st.plotly_chart(fig1, use_container_width=True)
 
-        # Course Load stress (if available)
+        # Stress by course load (if available)
         if "course_load" in df.columns:
             avg_stress_course = df.groupby("course_load")[stress_col].mean().reset_index()
             fig2 = px.bar(avg_stress_course, x="course_load", y=stress_col, color=stress_col,
                           color_continuous_scale="Tealgrn", title="Average Stress by Course Load")
             st.plotly_chart(fig2, use_container_width=True)
 
-        # Automated Recommendations
-        st.markdown("### 🧘 Recommendations for Reducing Academic Stress")
+        # Dynamic recommendations
+        st.markdown("### 🧘 Recommendations for Managing Academic Stress")
 
         if avg_stress > 6:
             st.warning("""
-            🔺 **High Stress Detected!**
-            - Prioritize rest and schedule regular breaks.
-            - Talk to a counselor or academic advisor.
-            - Avoid perfectionism; focus on progress.
+            🔺 **High Stress Detected**
+            - Prioritize adequate rest and regular exercise.
+            - Use relaxation apps (like Headspace or Calm) for guided mindfulness.
+            - Talk to trusted mentors, counselors, or peers for support.
             """)
         elif 4 <= avg_stress <= 6:
             st.info("""
-            ⚖️ **Moderate Stress Observed**
-            - Maintain balance between study and recreation.
-            - Use time-management tools and planners.
-            - Practice relaxation techniques such as deep breathing or light exercise.
+            ⚖️ **Moderate Stress Levels**
+            - Maintain a structured study schedule with frequent short breaks.
+            - Balance study with hobbies and physical activity.
+            - Stay socially connected and avoid burnout.
             """)
         else:
             st.success("""
             🌿 **Low Stress Levels**
-            - Keep up your healthy habits!
-            - Continue good sleep, hydration, and balanced study routines.
-            - Offer peer support to classmates who might feel overwhelmed.
+            - Keep practicing your healthy habits!
+            - Continue regular sleep and positive routines.
+            - Offer support to classmates who may be struggling.
             """)
 
         st.markdown("### 💬 Interpretation")
         st.success("""
-        The analysis highlights groups under more pressure — for example, 
-        certain genders or course loads.  
-        The recommendations are generated dynamically based on the dataset’s average stress level, 
-        helping interpret patterns into practical, actionable advice.
+        The data shows that stress varies across demographics and academic conditions.  
+        Using these insights, students can implement healthier routines and better stress-management techniques.
         """)
     else:
         st.error("⚠️ No stress column found in dataset.")
