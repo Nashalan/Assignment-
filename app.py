@@ -5,14 +5,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 
-# ------------------------------------
-# PAGE CONFIGURATION
-# ------------------------------------
-st.set_page_config(page_title="Academic Stress Dashboard", layout="wide")
+# ---------------------------------------------------
+# CONFIGURATION
+# ---------------------------------------------------
+st.set_page_config(page_title="Academic Stress Visualization", layout="wide")
 
-# ------------------------------------
-# LOAD DATASET
-# ------------------------------------
+# ---------------------------------------------------
+# LOAD DATA
+# ---------------------------------------------------
 DATA_URL = "https://raw.githubusercontent.com/Nashalan/Assignment-/refs/heads/main/Academic%20Stress%20Level.csv"
 
 @st.cache_data
@@ -23,7 +23,7 @@ def load_data():
 
 df = load_data()
 
-# Helper function: automatically find stress column
+# find stress column
 def get_stress_column(df):
     for c in df.columns:
         if "stress" in c.lower():
@@ -32,184 +32,180 @@ def get_stress_column(df):
 
 stress_col = get_stress_column(df)
 
-# ------------------------------------
+# ---------------------------------------------------
 # SIDEBAR MENU
-# ------------------------------------
-st.sidebar.title("📊 Academic Stress Dashboard")
+# ---------------------------------------------------
+st.sidebar.title("📊 Navigation Menu")
 page = st.sidebar.radio(
-    "Navigate to:",
-    ["🏠 Home", "🎯 Stress Distribution", "🎓 Academic Factors", "💤 Lifestyle Factors"]
+    "Select a Page:",
+    ["🏠 Home", "🎯 Stress Overview", "🎓 Academic Factors", "💤 Lifestyle & Well-being"]
 )
 
-# ------------------------------------
-# HOME PAGE
-# ------------------------------------
+# ---------------------------------------------------
+# PAGE 1 — HOME
+# ---------------------------------------------------
 if page == "🏠 Home":
-    st.title("🏠 Academic Stress Level Dashboard")
+    st.title("🏫 Academic Stress Level Dashboard")
     st.markdown("""
     Welcome to the **Academic Stress Visualization Dashboard**!  
-    This dashboard explores how **academic** and **lifestyle** factors influence student stress.
-
-    **Sections Overview:**
-    - 🎯 Stress Distribution: How stress levels vary among students  
-    - 🎓 Academic Factors: Study habits, grades, and workload impact  
-    - 💤 Lifestyle Factors: Sleep, physical activity, and well-being
+    This tool provides insights into how academic workload, habits, and lifestyle choices affect students' stress levels.
     """)
-    
-    st.subheader("📘 Dataset Overview")
+
+    st.subheader("📘 Dataset Preview")
     st.dataframe(df.head())
-    st.sidebar.info("👉 Use the sidebar to switch between pages.")
 
+    st.info("""
+    Use the sidebar to navigate through the pages:
+    - 🎯 *Stress Overview* — overall distribution of stress levels  
+    - 🎓 *Academic Factors* — academic habits and performance  
+    - 💤 *Lifestyle & Well-being* — impact of daily routines
+    """)
 
-# ------------------------------------
-# STRESS DISTRIBUTION PAGE
-# ------------------------------------
-elif page == "🎯 Stress Distribution":
-    st.title("🎯 Stress Distribution Analysis")
+# ---------------------------------------------------
+# PAGE 2 — STRESS OVERVIEW
+# ---------------------------------------------------
+elif page == "🎯 Stress Overview":
+    st.title("🎯 Stress Overview & Patterns")
 
     st.markdown("### 🎯 Objective")
-    st.write("To visualize the overall distribution of students' stress levels and identify key patterns or outliers.")
+    st.write("To understand how stress levels are distributed among students and whether any patterns exist across demographic factors.")
 
     st.markdown("### 📦 Summary Box")
     st.info("""
-    This visualization examines how students’ stress levels are distributed across the dataset.
-    It reveals whether stress levels follow a normal, skewed, or bimodal pattern and compares
-    stress across genders when applicable.
+    This section explores the **overall distribution** of stress levels.
+    It highlights whether most students experience high, medium, or low stress, 
+    and how stress varies across groups such as gender or course load.
     """)
 
     if stress_col:
         st.markdown("### 📊 Visualizations")
 
-        # 1. Histogram
+        # Histogram
         fig, ax = plt.subplots()
         sns.histplot(df[stress_col], kde=True, color="skyblue", ax=ax)
-        ax.set_title("Distribution of Stress Levels")
+        ax.set_title("Distribution of Student Stress Levels")
         st.pyplot(fig)
 
-        # 2. Boxplot
+        # Boxplot
         fig, ax = plt.subplots()
-        sns.boxplot(x=df[stress_col], color="salmon", ax=ax)
+        sns.boxplot(x=df[stress_col], color="lightcoral", ax=ax)
         ax.set_title("Boxplot of Stress Levels")
         st.pyplot(fig)
 
-        # 3. Pie Chart (by gender if exists)
+        # Gender Comparison (if available)
         if "gender" in df.columns:
-            avg_stress = df.groupby("gender")[stress_col].mean().reset_index()
-            fig = px.pie(avg_stress, names="gender", values=stress_col, title="Average Stress by Gender")
+            fig = px.violin(df, x="gender", y=stress_col, color="gender",
+                            box=True, points="all", title="Stress Levels by Gender")
             st.plotly_chart(fig)
 
-        st.markdown("### 💬 Interpretation / Discussion")
-        st.write("""
-        The histogram indicates how stress levels are spread among students.
-        A right-skewed curve suggests most students experience moderate stress.
-        The boxplot helps detect outliers—students reporting extreme stress.
-        Gender differences, if visible, highlight variations in stress perception.
+        st.markdown("### 💬 Interpretation")
+        st.success("""
+        The histogram shows that stress levels are concentrated around the middle range, 
+        indicating moderate stress among most students.  
+        The boxplot reveals some outliers—students reporting extreme stress levels.  
+        If gender differences appear, it may suggest how social or academic pressures differ between groups.
         """)
     else:
-        st.error("⚠️ No column containing 'stress' found in the dataset.")
+        st.error("No column containing 'stress' found in the dataset.")
 
-
-# ------------------------------------
-# ACADEMIC FACTORS PAGE
-# ------------------------------------
+# ---------------------------------------------------
+# PAGE 3 — ACADEMIC FACTORS
+# ---------------------------------------------------
 elif page == "🎓 Academic Factors":
-    st.title("🎓 Academic Factors & Stress")
+    st.title("🎓 Academic Factors & Student Stress")
 
     st.markdown("### 🎯 Objective")
-    st.write("To explore the impact of academic workload and performance variables on student stress levels.")
+    st.write("To investigate how study habits, workload, and academic performance influence students' stress levels.")
 
     st.markdown("### 📦 Summary Box")
     st.info("""
-    This section investigates correlations between academic metrics (e.g., study hours, grades) and stress.
-    Scatter plots, correlation heatmaps, and pairplots help visualize the strength and direction of these relationships.
-    """)
-
-    if stress_col:
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        if stress_col in numeric_cols:
-            numeric_cols.remove(stress_col)
-
-        if numeric_cols:
-            st.markdown("### 📊 Visualizations")
-
-            # 1. Scatter plot
-            x_axis = st.selectbox("Select an academic variable to compare:", numeric_cols)
-            fig = px.scatter(df, x=x_axis, y=stress_col, trendline="ols",
-                             title=f"{x_axis.replace('_',' ').title()} vs Stress Level")
-            st.plotly_chart(fig)
-
-            # 2. Correlation heatmap
-            fig, ax = plt.subplots(figsize=(8, 6))
-            sns.heatmap(df.corr(), annot=True, cmap="coolwarm", ax=ax)
-            ax.set_title("Correlation Heatmap of Academic Factors")
-            st.pyplot(fig)
-
-            # 3. Pairplot
-            selected = st.multiselect("Select up to 3 variables for pairplot:", numeric_cols, numeric_cols[:3])
-            if selected:
-                sns.pairplot(df, vars=selected + [stress_col], diag_kind="kde")
-                st.pyplot(plt.gcf())
-
-            st.markdown("### 💬 Interpretation / Discussion")
-            st.write("""
-            Strong positive correlations imply that heavier academic workloads or lower grades
-            are associated with higher stress. Conversely, weaker or negative correlations suggest
-            better performance may reduce perceived stress. Pairplots reveal clusters or anomalies
-            in the academic-stress relationship.
-            """)
-        else:
-            st.warning("No numeric academic columns found.")
-    else:
-        st.error("⚠️ No stress column found in dataset.")
-
-
-# ------------------------------------
-# LIFESTYLE FACTORS PAGE
-# ------------------------------------
-elif page == "💤 Lifestyle Factors":
-    st.title("💤 Lifestyle Factors & Stress")
-
-    st.markdown("### 🎯 Objective")
-    st.write("To assess how lifestyle factors—particularly sleep and physical activity—affect stress levels.")
-
-    st.markdown("### 📦 Summary Box")
-    st.info("""
-    Lifestyle behaviors such as sleep and exercise play key roles in managing stress.
-    This section visualizes how these factors correlate with stress, showing whether
-    healthier habits are linked to lower stress.
+    This page focuses on **academic influences** such as study hours, 
+    course difficulty, and grades.  
+    Using correlation and scatter plots, it shows whether academic pressure 
+    significantly raises student stress levels.
     """)
 
     if stress_col:
         st.markdown("### 📊 Visualizations")
 
-        # 1. Sleep duration vs stress
+        # Correlation Heatmap
+        numeric_df = df.select_dtypes(include="number")
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sns.heatmap(numeric_df.corr(), annot=True, cmap="coolwarm", ax=ax)
+        ax.set_title("Correlation Between Academic Variables")
+        st.pyplot(fig)
+
+        # Scatter plot with user selection
+        num_cols = [col for col in numeric_df.columns if col != stress_col]
+        if num_cols:
+            x_var = st.selectbox("Select Academic Variable:", num_cols)
+            fig = px.scatter(df, x=x_var, y=stress_col, color=stress_col,
+                             trendline="ols", title=f"{x_var.replace('_',' ').title()} vs Stress Level")
+            st.plotly_chart(fig)
+
+        # Average stress by grade or course load (if exists)
+        if "course_load" in df.columns:
+            avg_stress = df.groupby("course_load")[stress_col].mean().reset_index()
+            fig = px.bar(avg_stress, x="course_load", y=stress_col,
+                         title="Average Stress by Course Load", color=stress_col)
+            st.plotly_chart(fig)
+
+        st.markdown("### 💬 Interpretation")
+        st.success("""
+        The correlation heatmap highlights which academic factors most strongly influence stress.  
+        A positive correlation suggests that increased workload or lower grades are linked to higher stress.  
+        Scatter plots visualize these relationships, making it clear how academic performance affects mental well-being.
+        """)
+    else:
+        st.error("No stress column found in dataset.")
+
+# ---------------------------------------------------
+# PAGE 4 — LIFESTYLE & WELL-BEING
+# ---------------------------------------------------
+elif page == "💤 Lifestyle & Well-being":
+    st.title("💤 Lifestyle Habits and Stress Management")
+
+    st.markdown("### 🎯 Objective")
+    st.write("To explore how lifestyle behaviors such as sleep duration and physical activity influence student stress levels.")
+
+    st.markdown("### 📦 Summary Box")
+    st.info("""
+    Healthy routines can significantly reduce stress.  
+    This section visualizes how **sleep duration**, **physical activity**, 
+    and other lifestyle patterns correlate with stress among students.
+    """)
+
+    if stress_col:
+        st.markdown("### 📊 Visualizations")
+
+        # 1. Sleep vs Stress
         if "sleep_duration" in df.columns:
-            fig = px.scatter(df, x="sleep_duration", y=stress_col,
-                             color="sleep_duration", color_continuous_scale="viridis",
+            fig = px.scatter(df, x="sleep_duration", y=stress_col, color=stress_col,
+                             color_continuous_scale="viridis", trendline="ols",
                              title="Sleep Duration vs Stress Level")
             st.plotly_chart(fig)
 
-        # 2. Physical activity vs stress
+        # 2. Physical Activity vs Stress
         if "physical_activity" in df.columns:
             fig, ax = plt.subplots()
-            sns.boxplot(x="physical_activity", y=stress_col, data=df, palette="coolwarm", ax=ax)
-            ax.set_title("Stress Level by Physical Activity")
+            sns.boxplot(x="physical_activity", y=stress_col, data=df, palette="Set2", ax=ax)
+            ax.set_title("Stress Levels Across Physical Activity Levels")
             st.pyplot(fig)
 
-        # 3. 3D scatter
+        # 3. 3D Relationship (if both present)
         if all(c in df.columns for c in ["sleep_duration", "physical_activity"]):
-            fig = px.scatter_3d(
-                df, x="sleep_duration", y="physical_activity", z=stress_col,
-                color=stress_col, title="3D Relationship: Sleep, Activity & Stress"
-            )
+            fig = px.scatter_3d(df, x="sleep_duration", y="physical_activity", z=stress_col,
+                                color=stress_col, color_continuous_scale="Plasma",
+                                title="3D Relationship: Sleep, Activity & Stress")
             st.plotly_chart(fig)
 
-        st.markdown("### 💬 Interpretation / Discussion")
-        st.write("""
-        Students with longer sleep duration generally exhibit lower stress levels,
-        while low physical activity tends to correspond with higher stress.
-        The 3D visualization emphasizes the combined effect of sleep and activity
-        on overall well-being and stress reduction.
+        st.markdown("### 💬 Interpretation")
+        st.success("""
+        Students who get adequate sleep or engage in regular physical activity 
+        generally report lower stress levels.  
+        Short sleep durations and inactivity correlate with higher stress.  
+        The 3D visualization shows how combining good sleep and active habits 
+        can help reduce academic stress effectively.
         """)
     else:
-        st.error("⚠️ No stress column found in dataset.")
+        st.error("No stress column found in dataset.")
