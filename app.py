@@ -20,6 +20,8 @@ def load_data():
     return df
 
 df = load_data()
+print(df.columns.tolist())
+
 
 # detect stress column automatically
 def get_stress_column(df):
